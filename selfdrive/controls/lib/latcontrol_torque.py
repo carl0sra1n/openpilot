@@ -21,8 +21,11 @@ from openpilot.sunnypilot.selfdrive.controls.lib.latcontrol_torque_ext import La
 # move it at all, this is compensated for too.
 
 LOW_SPEED_X = [0, 10, 20, 30]
-LOW_SPEED_Y = [15, 13, 10, 5]
+LOW_SPEED_Y = [12, 3, 1, 0]
 
+# Tim's Default: Full friction at or below ||0.6 m/s^2||, no friction at or above ||0.8 m/s^2||
+FRICTION_X = [0.6, 0.8] # m/s^2 lateral acceleration
+FRICTION_Y = [1.0, 0.5] # Dynamic Friction
 
 class LatControlTorque(LatControl):
   def __init__(self, CP, CP_SP, CI):
