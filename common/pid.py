@@ -16,7 +16,8 @@ class PIDController:
     if isinstance(self._k_d, Number):
       self._k_d = [[0], [self._k_d]]
 
-    self.set_limits(pos_limit, neg_limit)
+    # pass through per-parameter p-limits as well (defaults kept for callers)
+    self.set_limits(pos_limit, neg_limit, pos_p_limit, neg_p_limit)
 
     self.i_rate = 1.0 / rate
     self.speed = 0.0
@@ -42,10 +43,12 @@ class PIDController:
     self.f = 0.0
     self.control = 0
 
-  def set_limits(self, pos_limit, neg_limit):
+  def set_limits(self, pos_limit, neg_limit, pos_p_limit=None, neg_p_limit=None):
+    # General output limits
     self.pos_limit = pos_limit
     self.neg_limit = neg_limit
 
+    # Per-component limits for proportional term (optional)
     self.pos_p_limit = pos_p_limit
     self.neg_p_limit = neg_p_limit
 
