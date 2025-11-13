@@ -281,6 +281,13 @@ def jsonrpc_handler(end_event: threading.Event) -> None:
       if "method" in data:
         cloudlog.event("athena.jsonrpc_handler.call_method", data=data)
         response = JSONRPCResponseManager.handle(data, dispatcher)
+        # Log the response JSON we are about to send so we can debug missing results
+        try:
+          cloudlog.debug("athena.jsonrpc_handler.response", request=data, response=response.json)
+          if not response.json or response.json == "":
+            cloudlog.warning("athena.jsonrpc_handler.empty_response", request=data, response=response.json)
+        except Exception:
+          cloudlog.exception("athena.jsonrpc_handler.logging_failed")
         send_queue.put_nowait(response.json)
       elif "id" in data and ("result" in data or "error" in data):
         log_recv_queue.put_nowait(data)
@@ -291,6 +298,27 @@ def jsonrpc_handler(end_event: threading.Event) -> None:
     except Exception as e:
       cloudlog.exception("athena jsonrpc handler failed")
       send_queue.put_nowait(json.dumps({"error": str(e)}))
+
+
+@dispatcher.add_method
+def getSdpDebug():
+  """Return debug info about the sdp_send_queue without consuming it."""
+  try:
+    items = list(sdp_send_queue.queue)
+    first = None
+    if len(items) > 0:
+      # return a safe representation of the first item
+      try:
+        first = items[0]
+      except Exception:
+        first = repr(items[0])
+    return {
+      "qsize": sdp_send_queue.qsize(),
+      "peek": first,
+    }
+  except Exception:
+    cloudlog.exception("athena.getSdpDebug.exception")
+    return {"error": "failed"}
 
 
 def retry_upload(tid: int, end_event: threading.Event, increase_count: bool = True) -> None:
