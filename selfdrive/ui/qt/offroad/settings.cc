@@ -18,70 +18,70 @@
 
 TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
   // param, title, desc, icon, restart needed
-  std::vector<std::tuple<QString, QString, QString, QString, bool>> toggle_defs{
-    {
-      "OpenpilotEnabledToggle",
-      tr("Enable sunnypilot"),
-      tr("Use the sunnypilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature."),
-      "../assets/icons/chffr_wheel.png",
-      true,
-    },
-    {
-      "ExperimentalMode",
-      tr("Experimental Mode"),
-      "",
-      "../assets/icons/experimental_white.svg",
-      false,
-    },
-    {
-      "DisengageOnAccelerator",
-      tr("Disengage on Accelerator Pedal"),
-      tr("When enabled, pressing the accelerator pedal will disengage sunnypilot."),
-      "../assets/icons/disengage_on_accelerator.svg",
-      false,
-    },
-    {
-      "IsLdwEnabled",
-      tr("Enable Lane Departure Warnings"),
-      tr("Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h)."),
-      "../assets/icons/warning.png",
-      false,
-    },
-    {
-      "AlwaysOnDM",
-      tr("Always-On Driver Monitoring"),
-      tr("Enable driver monitoring even when sunnypilot is not engaged."),
-      "../assets/icons/monitoring.png",
-      false,
-    },
-    {
-      "RecordFront",
-      tr("Record and Upload Driver Camera"),
-      tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
-      "../assets/icons/monitoring.png",
-      true,
-    },
-    {
-      "RecordAudio",
-      tr("Record and Upload Microphone Audio"),
-      tr("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
-      "../assets/icons/microphone.png",
-      true,
-    },
-    {
-      "EnableStreamer",
-      tr("Stream live video to your phone"),
-      tr("Use the Konik stable website to stream your devices cameras to your phone in realtime."),
-      "../assets/icons/warning.png",
-    },
-    {
-      "IsMetric",
-      tr("Use Metric System"),
-      tr("Display speed in km/h instead of mph."),
-      "../assets/icons/metric.png",
-      false,
-    },
-  };
+  std::vector<std::tuple<QString, QString, QString, QString, bool>> toggle_defs;
+  toggle_defs.push_back(std::make_tuple(
+    QString("OpenpilotEnabledToggle"),
+    tr("Enable sunnypilot"),
+    tr("Use the sunnypilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature."),
+    QString("../assets/icons/chffr_wheel.png"),
+    true
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("ExperimentalMode"),
+    tr("Experimental Mode"),
+    QString(""),
+    QString("../assets/icons/experimental_white.svg"),
+    false
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("DisengageOnAccelerator"),
+    tr("Disengage on Accelerator Pedal"),
+    tr("When enabled, pressing the accelerator pedal will disengage sunnypilot."),
+    QString("../assets/icons/disengage_on_accelerator.svg"),
+    false
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("IsLdwEnabled"),
+    tr("Enable Lane Departure Warnings"),
+    tr("Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h)."),
+    QString("../assets/icons/warning.png"),
+    false
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("AlwaysOnDM"),
+    tr("Always-On Driver Monitoring"),
+    tr("Enable driver monitoring even when sunnypilot is not engaged."),
+    QString("../assets/icons/monitoring.png"),
+    false
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("RecordFront"),
+    tr("Record and Upload Driver Camera"),
+    tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
+    QString("../assets/icons/monitoring.png"),
+    true
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("RecordAudio"),
+    tr("Record and Upload Microphone Audio"),
+    tr("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
+    QString("../assets/icons/microphone.png"),
+    true
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("EnableStreamer"),
+    tr("Stream live video to your phone"),
+    tr("Use the Konik stable website to stream your devices cameras to your phone in realtime."),
+    QString("../assets/icons/warning.png"),
+    false
+  ));
+  toggle_defs.push_back(std::make_tuple(
+    QString("IsMetric"),
+    tr("Use Metric System"),
+    tr("Display speed in km/h instead of mph."),
+    QString("../assets/icons/metric.png"),
+    false
+  ));
 
 
   std::vector<QString> longi_button_texts{tr("Aggressive"), tr("Standard"), tr("Relaxed")};
