@@ -69,6 +69,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       true,
     },
     {
+      "EnableStreamer",
+      tr("Stream live video to your phone"),
+      tr("Use the Konik stable website to stream your devices cameras to your phone in realtime."),
+      "../assets/icons/warning.png",
+    },
+    {
       "IsMetric",
       tr("Use Metric System"),
       tr("Display speed in km/h instead of mph."),
