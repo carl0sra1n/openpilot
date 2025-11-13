@@ -108,10 +108,10 @@ def and_(*fns):
   return lambda *args: operator.and_(*(fn(*args) for fn in fns))
 
 # hoofpilot functions
-def start_stream_encoder(started: bool, params: Params, CP: car.CarParams, classic_model, frogpilot_toggles) -> bool:
+def start_stream_encoder(started: bool, params: Params, CP: car.CarParams) -> bool:
   return params.get_bool("LiveStreamRunning") or (started and CP.notCar)
 
-def start_camerad(started: bool, params: Params, CP: car.CarParams, classic_model, frogpilot_toggles) -> bool:
+def start_camerad(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started or params.get_bool("IsDriverViewEnabled") or params.get_bool("LiveStreamRunning")
 
 procs = [
