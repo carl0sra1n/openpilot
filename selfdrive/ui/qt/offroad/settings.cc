@@ -69,6 +69,13 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       true,
     },
     {
+      "EnableStreamer",
+      tr("Stream live video to Konik Stable"),
+      tr("Use the Konik Stable to stream your device's cameras in real time."),
+      "../assets/icons/monitoring.png",
+      false,
+    },
+    {
       "IsMetric",
       tr("Use Metric System"),
       tr("Display speed in km/h instead of mph."),
@@ -114,6 +121,13 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
     if (param == "DisengageOnAccelerator") {
       addItem(long_personality_setting);
     }
+  }
+
+  // Force EnableStreamer on and disable UI toggle (always true from code)
+  params.putBool("EnableStreamer", true);
+  if (toggles.count("EnableStreamer")) {
+    toggles["EnableStreamer"]->setChecked(true);
+    toggles["EnableStreamer"]->setEnabled(false);
   }
 
   // Toggles with confirmation dialogs
