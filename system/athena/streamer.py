@@ -4,6 +4,8 @@ import json
 import queue
 import subprocess
 import logging
+import time
+import cereal.messaging as messaging
 from aiortc import (
   RTCPeerConnection, RTCConfiguration, RTCSessionDescription,
   RTCDataChannel, RTCRtpCodecCapability, RTCIceServer
@@ -340,6 +342,11 @@ class Streamer:
       'type': self.pc.localDescription.type,
       'sdp': self.pc.localDescription.sdp,
     })
+    # log the SDP payload we will enqueue for debugging
+    try:
+      logger.debug("athena.streamer.build.put_sdp len=%d preview=%s", len(message), message[:200])
+    except Exception:
+      logger.exception("athena.streamer.build.preview_failed")
     self.sdp_send_queue.put_nowait(message)
 
   async def stop(self) -> None:

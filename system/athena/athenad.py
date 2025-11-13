@@ -195,6 +195,7 @@ def handle_long_poll(ws: WebSocket, exit_event: threading.Event | None) -> None:
     threads += [
       threading.Thread(target=rtc_handler, args=(end_event, sdp_send_queue, sdp_recv_queue, ice_send_queue), name='rtc_handler')
     ]
+    cloudlog.debug("athena.handle_long_poll.added_rtc_handler", enable_streamer=Params().get_bool("EnableStreamer"))
 
   for thread in threads:
     thread.start()
@@ -215,6 +216,7 @@ def handle_long_poll(ws: WebSocket, exit_event: threading.Event | None) -> None:
 def rtc_handler(end_event: threading.Event, sdp_send_queue: queue.Queue, sdp_recv_queue: queue.Queue, ice_recv_queue: queue.Queue) -> None:
   loop = asyncio.new_event_loop()
   asyncio.set_event_loop(loop)
+  cloudlog.debug("athena.rtc_handler.start")
   try:
     streamer = Streamer(sdp_send_queue, sdp_recv_queue, ice_recv_queue)
     loop.run_until_complete(streamer.event_loop(end_event))
@@ -223,7 +225,26 @@ def rtc_handler(end_event: threading.Event, sdp_send_queue: queue.Queue, sdp_rec
 
 @dispatcher.add_method
 def setSdpAnswer(answer):
-  sdp_recv_queue.put_nowait(answer)
+  """Accept an SDP answer (dict or JSON string) and enqueue it for the Streamer.
+
+  Returns a simple success dict so JSON-RPC callers receive a result.
+  """
+  try:
+    # If the caller passed a JSON string, try to decode it.
+    parsed = answer
+    if isinstance(answer, str):
+      try:
+        parsed = json.loads(answer)
+      except Exception:
+        # keep raw string if it isn't JSON
+        parsed = answer
+
+    cloudlog.debug("athena.setSdpAnswer.enqueue", answer=parsed)
+    sdp_recv_queue.put_nowait(parsed)
+    return {"success": 1}
+  except Exception:
+    cloudlog.exception("athena.setSdpAnswer.failed")
+    return {"success": 0, "error": "enqueue_failed"}
 
 @dispatcher.add_method
 def getSdp():
