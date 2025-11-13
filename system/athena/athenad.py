@@ -227,15 +227,41 @@ def setSdpAnswer(answer):
 
 @dispatcher.add_method
 def getSdp():
+  """Retrieve an SDP message produced by the Streamer.
+
+  This method waits up to `timeout` seconds for an item on `sdp_send_queue`.
+  We log the raw value and attempt JSON decode; if the item is not JSON we
+  return it as a plain sdp string inside a dict. On timeout we return an
+  explicit error dict so the JSON-RPC client gets a meaningful `result`.
+  """
   start_time = time.time()
   timeout = 10
   while time.time() - start_time < timeout:
     try:
-      sdp = json.loads(sdp_send_queue.get(timeout=0.1))
-      if sdp:
-        return sdp
+      raw = sdp_send_queue.get(timeout=0.1)
+      cloudlog.debug("athena.getSdp.raw", raw=raw)
+
+      if raw is None:
+        continue
+
+      # If we already have a dict, return it directly
+      if isinstance(raw, dict):
+        cloudlog.debug("athena.getSdp.return_dict", sdp=raw)
+        return raw
+
+      # Try to decode JSON; if it fails, return raw string as SDP
+      try:
+        sdp = json.loads(raw)
+        cloudlog.debug("athena.getSdp.parsed", sdp=sdp)
+        return sdp if sdp is not None else {"error": "empty_sdp"}
+      except Exception:
+        cloudlog.debug("athena.getSdp.not_json", raw=raw)
+        return {"sdp": raw}
     except queue.Empty:
       pass
+
+  cloudlog.event("athena.getSdp.timeout", timeout=timeout)
+  return {"error": "timeout"}
 
 @dispatcher.add_method
 def getIce():
