@@ -222,7 +222,15 @@ def rtc_handler(end_event: threading.Event, sdp_send_queue: queue.Queue, sdp_rec
 
 @dispatcher.add_method
 def setSdpAnswer(answer):
-  sdp_recv_queue.put_nowait(answer)
+  try:
+    sdp_recv_queue.put_nowait(answer)
+    return {"success": 1}
+  except queue.Full:
+    cloudlog.event("athena.setSdpAnswer.enqueue_full")
+    return {"error": "enqueue_failed", "success": 0}
+  except Exception as e:
+    cloudlog.exception("athena.setSdpAnswer.exception")
+    return {"error": str(e), "success": 0}
 
 @dispatcher.add_method
 def getSdp():
