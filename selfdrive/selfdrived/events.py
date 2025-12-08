@@ -406,49 +406,6 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.WARNING: below_steer_speed_alert,
   },
 
-  EventName.preLaneChangeLeft: {
-    ET.WARNING: Alert(
-      "Auto Lane Change Suspended!",
-      "Manually steer to the left to override this.",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .1, alert_rate=0.75),
-  },
-
-  EventName.preLaneChangeRight: {
-    ET.WARNING: Alert(
-      "Auto Lane Change Suspended!",
-      "Manually steer to the right to override this.",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .1, alert_rate=0.75),
-  },
-
-  EventName.laneChangeBlocked: {
-    ET.WARNING: Alert(
-      "Auto Lane Change Blocked!",
-      "Object has been detected in your blind spot.",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, .1),
-  },
-
-  EventName.laneChange: {
-    ET.WARNING: Alert(
-      "Automatically Changing Lanes",
-      "Please check your surroundings.",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .1),
-  },
-
-  EventName.steerSaturated: {
-    ET.WARNING: Alert(
-      "Steering torque at maximum velocity!",
-      "Houston, we have a problem.",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, 2.),
-  },
-
-  # Thrown when the fan is driven at >50% but is not rotating
-  EventName.fanMalfunction: {
-    ET.PERMANENT: NormalPermanentAlert("Fan Malfunction", "Likely Hardware Issue"),
   },
 
   # Camera is not outputting frames
