@@ -406,6 +406,34 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.WARNING: below_steer_speed_alert,
   },
 
+  EventName.preLaneChangeLeft: {
+    ET.WARNING: Alert(
+      "Steer Left",
+      "Confirm Lane Change",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .1),
+  },
+
+  EventName.preLaneChangeRight: {
+    ET.WARNING: Alert(
+      "Steer Right",
+      "Confirm Lane Change",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .1),
+  },
+
+  EventName.laneChangeBlocked: {
+    ET.WARNING: Alert(
+      "Car in Blindspot",
+      "",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, .1),
+  },
+
+  EventName.steerSaturated: {
+    ET.WARNING: steer_saturated_alert,
+  },
+
 
 
   # Camera is not outputting frames
