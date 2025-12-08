@@ -87,17 +87,16 @@ class LatControlTorque(LatControl):
       self.previous_measurement = measurement
 
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
+      # Downscale friction input error based on the desired lateral acceleration
       error = setpoint - measurement
-
-      # do error correction in lateral acceleration space, convert at end to handle non-linear torque responses correctly
-      pid_log.error = float(error)
-      ff = gravity_adjusted_future_lateral_accel
-      # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
-      ff -= self.torque_params.latAccelOffset
-      # TODO jerk is weighted by lat_delay for legacy reasons, but should be made independent of it
-      ff += get_friction(error, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
-
-      freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
+      if self.use_lateral_jerk:
+        friction_input = self.lat_accel_friction_factor * error + self.lat_jerk_friction_factor * lookahead_lateral_jerk
+      else:
+        friction_input = setpoint - measurement
+        friction_input *= np.interp(abs(setpoint), FRICTION_X, FRICTION_Y)
+      ff = self.torque_from_lateral_accel(LatControlInputs(gravity_adjusted_lateral_accel, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params,
+                                          friction_input, lateral_accel_deadzone, friction_compensation=True,
+                                          gravity_adjusted=True)
       output_lataccel = self.pid.update(pid_log.error,
                                        -measurement_rate,
                                         feedforward=ff,
