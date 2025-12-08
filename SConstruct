@@ -8,6 +8,9 @@ import numpy as np
 
 import SCons.Errors
 
+# SunnyPilot: Allow importing python modules from root (e.g. opendbc)
+sys.path.insert(0, os.path.abspath('.'))
+
 SCons.Warnings.warningAsException(True)
 
 Decider('MD5-timestamp')
