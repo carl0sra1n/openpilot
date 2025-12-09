@@ -96,6 +96,14 @@ class LatControlTorque(LatControl):
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
       # Downscale friction input error based on the desired lateral acceleration
       error = setpoint - measurement
+
+      # Apply low-speed curvature boost for better tight turns and parking
+      low_speed_factor = np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y)
+      if low_speed_factor > 0:
+        # Amplify response at low speeds (squared for stronger effect)
+        boost_multiplier = 1.0 + (low_speed_factor**2) * 0.01
+        setpoint = setpoint * boost_multiplier
+        measurement = measurement * boost_multiplier
       if self.use_lateral_jerk:
         friction_input = self.lat_accel_friction_factor * error + self.lat_jerk_friction_factor * lookahead_lateral_jerk
       else:
