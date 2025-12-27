@@ -9,7 +9,7 @@ LaneChangeDirection = log.LaneChangeDirection
 TurnDirection = custom.ModelDataV2SP.TurnDirection
 
 LANE_CHANGE_SPEED_MIN = 20 * CV.MPH_TO_MS
-LANE_CHANGE_TIME_MAX = 10.
+LANE_CHANGE_TIME_MAX = 7.0  # Reduced from 10s for quicker lane changes
 
 DESIRES = {
   LaneChangeDirection.none: {
@@ -64,8 +64,13 @@ class DesireHelper:
     below_lane_change_speed = v_ego < LANE_CHANGE_SPEED_MIN
 
     # Lane turn controller update
-    self.lane_turn_controller.update_lane_turn(blindspot_left=carstate.leftBlindspot, blindspot_right=carstate.rightBlindspot,
-                                               left_blinker=carstate.leftBlinker, right_blinker=carstate.rightBlinker, v_ego=v_ego)
+    self.lane_turn_controller.update_lane_turn(
+      blindspot_left=carstate.leftBlindspot,
+      blindspot_right=carstate.rightBlindspot,
+      left_blinker=carstate.leftBlinker,
+      right_blinker=carstate.rightBlinker,
+      v_ego=v_ego,
+    )
     self.lane_turn_direction = self.lane_turn_controller.get_turn_direction()
 
     if not lateral_active or self.lane_change_timer > LANE_CHANGE_TIME_MAX or self.alc.lane_change_set_timer == AutoLaneChangeMode.OFF:
@@ -84,12 +89,14 @@ class DesireHelper:
         # Update lane change direction
         self.lane_change_direction = self.get_lane_change_direction(carstate)
 
-        torque_applied = carstate.steeringPressed and \
-                         ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
-                          (carstate.steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))
+        torque_applied = carstate.steeringPressed and (
+          (carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left)
+          or (carstate.steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right)
+        )
 
-        blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
-                              (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
+        blindspot_detected = (carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or (
+          carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right
+        )
 
         self.alc.update_lane_change(blindspot_detected, carstate.brakePressed)
 
@@ -101,8 +108,8 @@ class DesireHelper:
 
       # LaneChangeState.laneChangeStarting
       elif self.lane_change_state == LaneChangeState.laneChangeStarting:
-        # fade out over .5s
-        self.lane_change_ll_prob = max(self.lane_change_ll_prob - 2 * DT_MDL, 0.0)
+        # fade out over 5s (10x slower for smoother transition)
+        self.lane_change_ll_prob = max(self.lane_change_ll_prob - 0.2 * DT_MDL, 0.0)
 
         # 98% certainty
         if lane_change_prob < 0.02 and self.lane_change_ll_prob < 0.01:
