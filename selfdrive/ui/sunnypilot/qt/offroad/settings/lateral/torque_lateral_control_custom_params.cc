@@ -52,30 +52,32 @@ TorqueLateralControlCustomParams::TorqueLateralControlCustomParams(
   torqueParamsOverrideFriction->setFixedWidth(280);
 
   // Updated to use TorqueParamsOverride keys
+  // Disable auto-label update (9th arg = false) so we can manually format as
+  // float in refresh()
   liveTuningKp =
       new OptionControlSP("TorqueParamsOverrideKp", tr("Proportional (kP)"), "",
-                          "", {0, 50}, 1, false, nullptr, true, false);
+                          "", {0, 50}, 1, false, nullptr, false, false);
   connect(liveTuningKp, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningKp->setFixedWidth(280);
 
   liveTuningKi =
       new OptionControlSP("TorqueParamsOverrideKi", tr("Integral (kI)"), "", "",
-                          {0, 30}, 1, false, nullptr, true, false);
+                          {0, 30}, 1, false, nullptr, false, false);
   connect(liveTuningKi, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningKi->setFixedWidth(280);
 
   liveTuningKf =
       new OptionControlSP("TorqueParamsOverrideKf", tr("Feed-Forward (kF)"), "",
-                          "", {0, 100}, 1, false, nullptr, true, false);
+                          "", {0, 100}, 1, false, nullptr, false, false);
   connect(liveTuningKf, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningKf->setFixedWidth(280);
 
   liveTuningDeadzone =
       new OptionControlSP("TorqueParamsOverrideDeadzone", tr("Deadzone (deg)"),
-                          "", "", {0, 20}, 1, false, nullptr, true, false);
+                          "", "", {0, 20}, 1, false, nullptr, false, false);
   connect(liveTuningDeadzone, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningDeadzone->setFixedWidth(280);
