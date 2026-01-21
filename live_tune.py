@@ -7,94 +7,93 @@ from openpilot.common.params import Params
 def main():
   params = Params()
 
-  # Default values (Current stable tuning)
-  DEFAULTS = {
-    "LiveTuningKp": "0.10",
-    "LiveTuningKi": "0.05",
-    "LiveTuningFriction": "0.05",
-    "LiveTuningLatAccelFactor": "1.7",
-    "LiveTuningKf": "0.0",
-    "LiveTuningDeadzone": "0.5",
-    "LiveTuningEnabled": "1",
+  # Keys matching C++ UI (TorqueParamsOverride)
+  KEYS = {
+    "kP": "TorqueParamsOverrideKp",
+    "kI": "TorqueParamsOverrideKi",
+    "kF": "TorqueParamsOverrideKf",
+    "Deadzone": "TorqueParamsOverrideDeadzone",
+    "Friction": "TorqueParamsOverrideFriction",
+    "LatAccel": "TorqueParamsOverrideLatAccelFactor",
+    "Master": "TorqueParamsOverrideEnabled",  # Toggles "Manual Real-Time Tuning" in UI
   }
 
-  print("\n🚗 NIDEC LIVE TUNING TOOL (v2) 🚗")
-  print("=================================")
+  # Scaling factors (UI stores Ints, we want Floats)
+  SCALES = {
+    "kP": 100.0,
+    "kI": 100.0,
+    "kF": 100000.0,
+    "Deadzone": 10.0,
+    "Friction": 100.0,
+    "LatAccel": 100.0,
+  }
 
-  # Initialize if not present
-  if not params.get_bool("LiveTuningEnabled"):
-    print("Initializing Live Tuning parameters...")
-    for k, v in DEFAULTS.items():
-      params.put(k, v)
-  else:
-    print("Live Tuning is ALREADY ACTIVE.")
-    # Add new params if missing (for users upgrading from v1)
-    if params.get("LiveTuningKf") is None:
-      params.put("LiveTuningKf", DEFAULTS["LiveTuningKf"])
-    if params.get("LiveTuningDeadzone") is None:
-      params.put("LiveTuningDeadzone", DEFAULTS["LiveTuningDeadzone"])
+  print("\n🚗 NIDEC LIVE TUNING TOOL (v3 - UI Sync) 🚗")
+  print("==========================================")
+  print("NOTE: This script now syncs perfectly with the Car Settings UI.")
+  print("Values entered here will appear correctly on screen and vice-versa.\n")
+
+  # Helper to read scaled param
+  def get_val(name):
+    raw = params.get(KEYS[name], encoding='utf-8')
+    if raw is None:
+      return 0.0
+    try:
+      return float(raw) / SCALES[name]
+    except:
+      return 0.0
+
+  # Helper to write scaled param
+  def put_val(name, val_float):
+    scaled_int = int(val_float * SCALES[name])
+    params.put(KEYS[name], str(scaled_int))
 
   while True:
     try:
-      # Read current values
-      kp = float(params.get("LiveTuningKp", encoding='utf-8') or DEFAULTS["LiveTuningKp"])
-      ki = float(params.get("LiveTuningKi", encoding='utf-8') or DEFAULTS["LiveTuningKi"])
-      friction = float(params.get("LiveTuningFriction", encoding='utf-8') or DEFAULTS["LiveTuningFriction"])
-      lat_accel = float(params.get("LiveTuningLatAccelFactor", encoding='utf-8') or DEFAULTS["LiveTuningLatAccelFactor"])
-      kf = float(params.get("LiveTuningKf", encoding='utf-8') or DEFAULTS["LiveTuningKf"])
-      deadzone = float(params.get("LiveTuningDeadzone", encoding='utf-8') or DEFAULTS["LiveTuningDeadzone"])
-      enabled = params.get_bool("LiveTuningEnabled")
+      kp = get_val("kP")
+      ki = get_val("kI")
+      kf = get_val("kF")
+      dz = get_val("Deadzone")
+      fric = get_val("Friction")
+      lat = get_val("LatAccel")
+      enabled = params.get_bool(KEYS["Master"])
 
-      print("\nCURRENT VALUES (Applied every ~1s):")
+      print("\nCURRENT VALUES:")
       print(f"1. kP (Proportional)    : {kp:.4f}")
       print(f"2. kI (Integral)        : {ki:.4f}")
-      print(f"3. Friction             : {friction:.4f}")
-      print(f"4. LatAccelFactor       : {lat_accel:.4f}")
-      print(f"5. kF (Feed-Forward)    : {kf:.5f}")
-      print(f"6. Deadzone (deg)       : {deadzone:.2f}")
+      print(f"3. kF (Feed-Forward)    : {kf:.5f}")
+      print(f"4. Deadzone (deg)       : {dz:.2f}")
+      print(f"5. Friction             : {fric:.4f}")
+      print(f"6. LatAccelFactor       : {lat:.4f}")
       print("---------------------------------")
-      print(f"7. Master Switch        : {'ON' if enabled else 'OFF'}")
-      print("8. Reset to Defaults")
+      print(f"7. Tuning Enabled       : {'ON' if enabled else 'OFF'}")
       print("0. Exit")
 
-      choice = input("\nSelect parameter to change (0-8): ").strip()
+      choice = input("\nSelect parameter to change (0-7): ").strip()
 
       if choice == '0':
         break
-      elif choice == '1':
-        val = input(f"New kP value [{kp}]: ").strip()
-        if val:
-          params.put("LiveTuningKp", val)
-      elif choice == '2':
-        val = input(f"New kI value [{ki}]: ").strip()
-        if val:
-          params.put("LiveTuningKi", val)
-      elif choice == '3':
-        val = input(f"New Friction value [{friction}]: ").strip()
-        if val:
-          params.put("LiveTuningFriction", val)
-      elif choice == '4':
-        val = input(f"New LatAccelFactor value [{lat_accel}]: ").strip()
-        if val:
-          params.put("LiveTuningLatAccelFactor", val)
-      elif choice == '5':
-        val = input(f"New kF value [{kf}]: ").strip()
-        if val:
-          params.put("LiveTuningKf", val)
-      elif choice == '6':
-        val = input(f"New Deadzone value [{deadzone}]: ").strip()
-        if val:
-          params.put("LiveTuningDeadzone", val)
-      elif choice == '7':
-        new_state = "0" if enabled else "1"
-        params.put("LiveTuningEnabled", new_state)
-        print(f"Toggling Master Switch -> {new_state}")
-      elif choice == '8':
-        print("Restoring defaults...")
-        for k, v in DEFAULTS.items():
-          params.put(k, v)
 
-      print("Parameter updated!")
+      elif choice in ['1', '2', '3', '4', '5', '6']:
+        # Mapping choice to key name
+        name_map = {'1': 'kP', '2': 'kI', '3': 'kF', '4': 'Deadzone', '5': 'Friction', '6': 'LatAccel'}
+        key_name = name_map[choice]
+
+        current = get_val(key_name)
+        val_str = input(f"New {key_name} value [{current}]: ").strip()
+        if val_str:
+          try:
+            val = float(val_str)
+            put_val(key_name, val)
+            print(f"Saved {key_name} -> {val} (Internal: {int(val * SCALES[key_name])})")
+          except ValueError:
+            print("Invalid number.")
+
+      elif choice == '7':
+        new_state = not enabled
+        params.put_bool(KEYS["Master"], new_state)
+        print(f"Toggling Master Switch -> {'ON' if new_state else 'OFF'}")
+
       time.sleep(0.5)
 
     except KeyboardInterrupt:
