@@ -133,14 +133,18 @@ class LatControlTorque(LatControl):
         ki = float(self.params_storage.get("LiveTuningKi"))
         friction = float(self.params_storage.get("LiveTuningFriction"))
         lat_accel_factor = float(self.params_storage.get("LiveTuningLatAccelFactor"))
+        kf = float(self.params_storage.get("LiveTuningKf"))
+        deadzone = float(self.params_storage.get("LiveTuningDeadzone"))
 
-        # Update PID params (assuming scalar values, overwriting any BP tables)
+        # Update PID params
         self.pid._k_p = [[0], [kp]]
         self.pid._k_i = [[0], [ki]]
+        self.pid.k_f = kf
 
         # Update Torque params
         self.torque_params.friction = friction
         self.torque_params.latAccelFactor = lat_accel_factor
+        self.steering_angle_deadzone_deg = deadzone
 
         # Update limits with new params
         self.update_limits()
