@@ -182,7 +182,9 @@ class LatControlTorque(LatControl):
         sp_lat = self.params_storage.get("TorqueParamsOverrideLatAccelFactor")
         if sp_lat:
           lat_accel_factor = float(sp_lat)
-          if lat_accel_factor > 10.0:
+          # Always scale down if it looks like an integer representation (UI saves x100)
+          # Threshold 5.0 covers all reasonable scaling scenarios
+          if lat_accel_factor > 5.0:
             lat_accel_factor /= 100.0
         else:
           lat_accel_factor = self.torque_params.latAccelFactor
