@@ -131,9 +131,11 @@ void TorqueLateralControlCustomParams::refresh() {
       QString::number(laf_param, 'f', 2) + " " + laf_unit);
   torqueParamsOverrideFriction->setLabel(
       QString::number(friction_param, 'f', 2));
-  liveTuningKp->setLabel(QString::number(kp_param, 'f', 2));
-  liveTuningKi->setLabel(QString::number(ki_param, 'f', 2));
-  liveTuningKf->setLabel(QString::number(kf_param, 'f', 5));
-  liveTuningDeadzone->setLabel(QString::number(deadzone_param, 'f', 1) +
+
+  // Display real float values (Internal Int -> Display Float)
+  liveTuningKp->setLabel(QString::number(kp_param / 100.0f, 'f', 2));
+  liveTuningKi->setLabel(QString::number(ki_param / 100.0f, 'f', 2));
+  liveTuningKf->setLabel(QString::number(kf_param / 100000.0f, 'f', 5));
+  liveTuningDeadzone->setLabel(QString::number(deadzone_param / 10.0f, 'f', 1) +
                                " deg");
 }
