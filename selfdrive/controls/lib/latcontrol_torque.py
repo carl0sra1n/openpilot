@@ -43,7 +43,11 @@ class LatControlTorque(LatControl):
 
   def init_live_tuning_params(self):
     # Initialize Params if not present (Scale x100/x10 for UI ints)
-    if self.params_storage.get("LiveTuningKp") is None:
+    # Also init if value is '0' (reset glitch)
+    curr_kp = self.params_storage.get("LiveTuningKp")
+    should_init = curr_kp is None or float(curr_kp) < 1.0
+
+    if should_init:
       kp_val = int(self.pid._k_p[1][0] * 100)
       ki_val = int(self.pid._k_i[1][0] * 100)
       kf_val = int(self.pid.k_f * 100000)
