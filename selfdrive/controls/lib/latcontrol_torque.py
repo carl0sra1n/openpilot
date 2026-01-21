@@ -136,6 +136,26 @@ class LatControlTorque(LatControl):
         kf = float(self.params_storage.get("LiveTuningKf"))
         deadzone = float(self.params_storage.get("LiveTuningDeadzone"))
 
+        # Auto-scale values if they come from UI (integers)
+        # kP: UI sends 0-50, we want 0.0-0.50
+        if kp > 1.0:
+          kp /= 100.0
+
+        # kI: UI sends 0-30, we want 0.0-0.30
+        if ki > 1.0:
+          ki /= 100.0
+
+        # kF: UI sends 0-100, we want 0.0-0.001
+        if kf > 0.001:
+          kf /= 100000.0
+
+        # Deadzone: UI sends 0-20, we want 0.0-2.0
+        # If value is > 2.0 (max reasonable deadzone), assume it's scaled x10
+        if deadzone > 2.0:
+          deadzone /= 10.0
+
+        print(f"DEBUG: LiveTuning Applied: kP={kp}, kI={ki}, kF={kf}, DZ={deadzone}, Fric={friction}, LAF={lat_accel_factor}")  # Debug print
+
         # Update PID params
         self.pid._k_p = [[0], [kp]]
         self.pid._k_i = [[0], [ki]]
