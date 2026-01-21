@@ -24,4 +24,8 @@ private:
   ParamControl *torqueLateralControlParamsOverride;
   OptionControlSP *torqueParamsOverrideFriction;
   OptionControlSP *torqueParamsOverrideLatAccelFactor;
+  OptionControlSP *liveTuningKp;
+  OptionControlSP *liveTuningKi;
+  OptionControlSP *liveTuningKf;
+  OptionControlSP *liveTuningDeadzone;
 };
