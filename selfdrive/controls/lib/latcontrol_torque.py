@@ -107,11 +107,16 @@ class LatControlTorque(LatControl):
       ff = gravity_adjusted_lateral_accel
       # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
       ff -= self.torque_params.latAccelOffset
-      ff += get_friction(desired_lateral_accel - actual_lateral_accel, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+
+      # Calculate friction compensation separately so we can pass it to torque_from_lateral_accel
+      friction_compensation = get_friction(desired_lateral_accel - actual_lateral_accel, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+      ff += friction_compensation
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
       output_lataccel = self.pid.update(pid_log.error, feedforward=ff, speed=CS.vEgo, freeze_integrator=freeze_integrator)
-      output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
+
+      # MODIFIED: Pass friction_compensation to torque_from_lateral_accel (Sunnypilot specific requirement)
+      output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params, friction_compensation)
 
       # Lateral acceleration torque controller extension updates
       # Overrides pid_log.error and output_torque
