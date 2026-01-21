@@ -37,8 +37,28 @@ class LatControlTorque(LatControl):
 
     self.params_storage = Params()
     self.step = 0
+    self.init_live_tuning_params()
 
     self.extension = LatControlTorqueExt(self, CP, CP_SP, CI)
+
+  def init_live_tuning_params(self):
+    # Initialize Params if not present (Scale x100/x10 for UI ints)
+    if self.params_storage.get("LiveTuningKp") is None:
+      kp_val = int(self.pid._k_p[1][0] * 100)
+      ki_val = int(self.pid._k_i[1][0] * 100)
+      kf_val = int(self.pid.k_f * 100000)
+      dz_val = int(self.steering_angle_deadzone_deg * 10)
+
+      self.params_storage.put("LiveTuningKp", str(kp_val))
+      self.params_storage.put("LiveTuningKi", str(ki_val))
+      self.params_storage.put("LiveTuningKf", str(kf_val))
+      self.params_storage.put("LiveTuningDeadzone", str(dz_val))
+      # Set Friction/LatAccel defaults for SP UI (x100)
+      self.params_storage.put("TorqueParamsOverrideFriction", str(int(self.torque_params.friction * 100)))
+      self.params_storage.put("TorqueParamsOverrideLatAccelFactor", str(int(self.torque_params.latAccelFactor * 100)))
+
+      self.params_storage.put_bool("LiveTuningEnabled", True)
+      self.params_storage.put_bool("TorqueParamsOverrideEnabled", True)
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
@@ -127,14 +147,43 @@ class LatControlTorque(LatControl):
       return
 
     try:
-      # Check if live tuning is enabled
-      if self.params_storage.get_bool("LiveTuningEnabled"):
+      # Check master switches (support both my script and SP UI toggle)
+      enabled = self.params_storage.get_bool("LiveTuningEnabled") or self.params_storage.get_bool("TorqueParamsOverrideEnabled")
+
+      if enabled:
+        # 1. READ PARAMS (Support both sources)
+        # PID & Deadzone (My Custom Params)
         kp = float(self.params_storage.get("LiveTuningKp"))
         ki = float(self.params_storage.get("LiveTuningKi"))
-        friction = float(self.params_storage.get("LiveTuningFriction"))
-        lat_accel_factor = float(self.params_storage.get("LiveTuningLatAccelFactor"))
         kf = float(self.params_storage.get("LiveTuningKf"))
         deadzone = float(self.params_storage.get("LiveTuningDeadzone"))
+
+        # Friction & LatAccel (Native SP Params from UI, or my script)
+        sp_fric = self.params_storage.get("TorqueParamsOverrideFriction")
+        if sp_fric:
+          friction = float(sp_fric)
+          if friction > 1.0:
+            friction /= 100.0
+        else:
+          friction = float(self.params_storage.get("LiveTuningFriction") or self.torque_params.friction)
+
+        sp_lat = self.params_storage.get("TorqueParamsOverrideLatAccelFactor")
+        if sp_lat:
+          lat_accel_factor = float(sp_lat)
+          if lat_accel_factor > 10.0:
+            lat_accel_factor /= 100.0
+        else:
+          lat_accel_factor = float(self.params_storage.get("LiveTuningLatAccelFactor") or self.torque_params.latAccelFactor)
+
+        # 2. AUTO-SCALE PID/DEADZONE (UI ints vs Script floats)
+        if kp > 1.0:
+          kp /= 100.0
+        if ki > 1.0:
+          ki /= 100.0
+        if kf > 0.001:
+          kf /= 100000.0
+        if deadzone > 2.0:
+          deadzone /= 10.0
 
         # Auto-scale values if they come from UI (integers)
         # kP: UI sends 0-50, we want 0.0-0.50
