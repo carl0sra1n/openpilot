@@ -13,6 +13,16 @@ TorqueLateralControlCustomParams::TorqueLateralControlCustomParams(
     const QString &icon, QWidget *parent)
     : ExpandableToggleRow(param, title, description, icon, parent) {
 
+  // Initialize defaults if missing to prevent "0" display on fresh boot
+  if (params.get("TorqueParamsOverrideKp").empty())
+    params.put("TorqueParamsOverrideKp", "10");
+  if (params.get("TorqueParamsOverrideKi").empty())
+    params.put("TorqueParamsOverrideKi", "5");
+  if (params.get("TorqueParamsOverrideKf").empty())
+    params.put("TorqueParamsOverrideKf", "0");
+  if (params.get("TorqueParamsOverrideDeadzone").empty())
+    params.put("TorqueParamsOverrideDeadzone", "0");
+
   QFrame *frame = new QFrame(this);
   QGridLayout *frame_layout = new QGridLayout();
   frame->setLayout(frame_layout);
@@ -41,30 +51,31 @@ TorqueLateralControlCustomParams::TorqueLateralControlCustomParams(
           &TorqueLateralControlCustomParams::refresh);
   torqueParamsOverrideFriction->setFixedWidth(280);
 
+  // Updated to use TorqueParamsOverride keys
   liveTuningKp =
-      new OptionControlSP("LiveTuningKp", tr("Proportional (kP)"), "", "",
-                          {0, 50}, 1, false, nullptr, true, false);
+      new OptionControlSP("TorqueParamsOverrideKp", tr("Proportional (kP)"), "",
+                          "", {0, 50}, 1, false, nullptr, true, false);
   connect(liveTuningKp, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningKp->setFixedWidth(280);
 
   liveTuningKi =
-      new OptionControlSP("LiveTuningKi", tr("Integral (kI)"), "", "", {0, 30},
-                          1, false, nullptr, true, false);
+      new OptionControlSP("TorqueParamsOverrideKi", tr("Integral (kI)"), "", "",
+                          {0, 30}, 1, false, nullptr, true, false);
   connect(liveTuningKi, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningKi->setFixedWidth(280);
 
   liveTuningKf =
-      new OptionControlSP("LiveTuningKf", tr("Feed-Forward (kF)"), "", "",
-                          {0, 100}, 1, false, nullptr, true, false);
+      new OptionControlSP("TorqueParamsOverrideKf", tr("Feed-Forward (kF)"), "",
+                          "", {0, 100}, 1, false, nullptr, true, false);
   connect(liveTuningKf, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningKf->setFixedWidth(280);
 
   liveTuningDeadzone =
-      new OptionControlSP("LiveTuningDeadzone", tr("Deadzone (deg)"), "", "",
-                          {0, 20}, 1, false, nullptr, true, false);
+      new OptionControlSP("TorqueParamsOverrideDeadzone", tr("Deadzone (deg)"),
+                          "", "", {0, 20}, 1, false, nullptr, true, false);
   connect(liveTuningDeadzone, &OptionControlSP::updateLabels, this,
           &TorqueLateralControlCustomParams::refresh);
   liveTuningDeadzone->setFixedWidth(280);
@@ -95,11 +106,15 @@ void TorqueLateralControlCustomParams::refresh() {
   float friction_param =
       QString::fromStdString(params.get("TorqueParamsOverrideFriction"))
           .toFloat();
-  float kp_param = QString::fromStdString(params.get("LiveTuningKp")).toFloat();
-  float ki_param = QString::fromStdString(params.get("LiveTuningKi")).toFloat();
-  float kf_param = QString::fromStdString(params.get("LiveTuningKf")).toFloat();
+  float kp_param =
+      QString::fromStdString(params.get("TorqueParamsOverrideKp")).toFloat();
+  float ki_param =
+      QString::fromStdString(params.get("TorqueParamsOverrideKi")).toFloat();
+  float kf_param =
+      QString::fromStdString(params.get("TorqueParamsOverrideKf")).toFloat();
   float deadzone_param =
-      QString::fromStdString(params.get("LiveTuningDeadzone")).toFloat();
+      QString::fromStdString(params.get("TorqueParamsOverrideDeadzone"))
+          .toFloat();
 
   torqueParamsOverrideLatAccelFactor->setTitle(
       tr("Lateral Acceleration Factor") + "\n(" +
