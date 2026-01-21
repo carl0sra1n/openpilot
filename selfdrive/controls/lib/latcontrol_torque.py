@@ -42,28 +42,31 @@ class LatControlTorque(LatControl):
     self.extension = LatControlTorqueExt(self, CP, CP_SP, CI)
 
   def init_live_tuning_params(self):
-    # Initialize Params if not present OR if they are '0' (UI reset glitch)
-    # Using 'TorqueParamsOverride' prefix provides better integration/persistence confidence
-    curr_kp = self.params_storage.get("TorqueParamsOverrideKp")
-    should_init = curr_kp is None or float(curr_kp) < 1.0
+    try:
+      # Initialize Params if not present OR if they are '0' (UI reset glitch)
+      # Using 'TorqueParamsOverride' prefix provides better integration/persistence confidence
+      curr_kp = self.params_storage.get("TorqueParamsOverrideKp")
+      should_init = curr_kp is None or float(curr_kp) < 1.0
 
-    if should_init:
-      kp_val = int(self.pid._k_p[1][0] * 100)
-      ki_val = int(self.pid._k_i[1][0] * 100)
-      kf_val = int(self.pid.k_f * 100000)
-      dz_val = int(self.steering_angle_deadzone_deg * 10)
+      if should_init:
+        kp_val = int(self.pid._k_p[1][0] * 100)
+        ki_val = int(self.pid._k_i[1][0] * 100)
+        kf_val = int(self.pid.k_f * 100000)
+        dz_val = int(self.steering_angle_deadzone_deg * 10)
 
-      self.params_storage.put("TorqueParamsOverrideKp", str(kp_val))
-      self.params_storage.put("TorqueParamsOverrideKi", str(ki_val))
-      self.params_storage.put("TorqueParamsOverrideKf", str(kf_val))
-      self.params_storage.put("TorqueParamsOverrideDeadzone", str(dz_val))
+        self.params_storage.put("TorqueParamsOverrideKp", str(kp_val))
+        self.params_storage.put("TorqueParamsOverrideKi", str(ki_val))
+        self.params_storage.put("TorqueParamsOverrideKf", str(kf_val))
+        self.params_storage.put("TorqueParamsOverrideDeadzone", str(dz_val))
 
-      # Set Friction/LatAccel defaults for SP UI (x100)
-      self.params_storage.put("TorqueParamsOverrideFriction", str(int(self.torque_params.friction * 100)))
-      self.params_storage.put("TorqueParamsOverrideLatAccelFactor", str(int(self.torque_params.latAccelFactor * 100)))
+        # Set Friction/LatAccel defaults for SP UI (x100)
+        self.params_storage.put("TorqueParamsOverrideFriction", str(int(self.torque_params.friction * 100)))
+        self.params_storage.put("TorqueParamsOverrideLatAccelFactor", str(int(self.torque_params.latAccelFactor * 100)))
 
-      self.params_storage.put_bool("LiveTuningEnabled", True)
-      self.params_storage.put_bool("TorqueParamsOverrideEnabled", True)
+        self.params_storage.put_bool("LiveTuningEnabled", True)
+        self.params_storage.put_bool("TorqueParamsOverrideEnabled", True)
+    except Exception:
+      pass
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
