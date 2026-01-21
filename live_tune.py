@@ -35,11 +35,13 @@ def main():
 
   # Helper to read scaled param
   def get_val(name):
-    raw = params.get(KEYS[name], encoding='utf-8')
+    # Fix: Remove user encoding arg, decode bytes manually
+    raw = params.get(KEYS[name])
     if raw is None:
       return 0.0
     try:
-      return float(raw) / SCALES[name]
+      val_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
+      return float(val_str) / SCALES[name]
     except:
       return 0.0
 
