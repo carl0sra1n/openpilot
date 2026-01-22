@@ -154,6 +154,9 @@ class Uploader:
       if name in self.immediate_priority:
         return name, key, fn
 
+    if len(upload_files) > 0:
+      return upload_files[0]
+
     return None
 
   def do_upload(self, key: str, fn: str):
