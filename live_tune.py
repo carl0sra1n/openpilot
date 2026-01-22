@@ -47,8 +47,11 @@ def main():
 
   # Helper to write scaled param
   def put_val(name, val_float):
-    scaled_int = int(val_float * SCALES[name])
-    params.put(KEYS[name], str(scaled_int))
+    scaled_val = val_float * SCALES[name]
+    # Fix: Params strictly enforces FLOAT type due to params_keys.h definition
+    # Use float() explicitly. We round to int first to stick to UI integer steps.
+    clean_val = float(int(scaled_val))
+    params.put(KEYS[name], clean_val)
 
   while True:
     try:
@@ -90,6 +93,8 @@ def main():
             print(f"Saved {key_name} -> {val} (Internal: {int(val * SCALES[key_name])})")
           except ValueError:
             print("Invalid number.")
+          except Exception as e:
+            print(f"Error saving: {e}")
 
       elif choice == '7':
         new_state = not enabled

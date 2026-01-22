@@ -54,14 +54,15 @@ class LatControlTorque(LatControl):
         kf_val = int(self.pid.k_f * 100000)
         dz_val = int(self.steering_angle_deadzone_deg * 10)
 
-        self.params_storage.put("TorqueParamsOverrideKp", str(kp_val))
-        self.params_storage.put("TorqueParamsOverrideKi", str(ki_val))
-        self.params_storage.put("TorqueParamsOverrideKf", str(kf_val))
-        self.params_storage.put("TorqueParamsOverrideDeadzone", str(dz_val))
+        # Use float() for typed keys
+        self.params_storage.put("TorqueParamsOverrideKp", float(kp_val))
+        self.params_storage.put("TorqueParamsOverrideKi", float(ki_val))
+        self.params_storage.put("TorqueParamsOverrideKf", float(kf_val))
+        self.params_storage.put("TorqueParamsOverrideDeadzone", float(dz_val))
 
         # Set Friction/LatAccel defaults for SP UI (x100)
-        self.params_storage.put("TorqueParamsOverrideFriction", str(int(self.torque_params.friction * 100)))
-        self.params_storage.put("TorqueParamsOverrideLatAccelFactor", str(int(self.torque_params.latAccelFactor * 100)))
+        self.params_storage.put("TorqueParamsOverrideFriction", float(int(self.torque_params.friction * 100)))
+        self.params_storage.put("TorqueParamsOverrideLatAccelFactor", float(int(self.torque_params.latAccelFactor * 100)))
 
         self.params_storage.put_bool("LiveTuningEnabled", True)
         self.params_storage.put_bool("TorqueParamsOverrideEnabled", True)
